@@ -18,9 +18,9 @@ class LogFilter(logging.Filter):
 logging.getLogger("werkzeug").addFilter(LogFilter())
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'secret_key'
-socketio = SocketIO(app)
 CORS(app, origins='*')
+app.config['SECRET_KEY'] = 'secret_key'
+socketio = SocketIO(app, cors_allowed_origins='*')
 
 
 @app.route('/')
