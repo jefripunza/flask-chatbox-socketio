@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Chat</title>
+    <link
+            href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+            rel="stylesheet"
+    />
+    <style>
+      .chat-gradient {
+        background: linear-gradient(to bottom, #84ccd7, #ffffff, #aedaa7);
+      }
+
+    </style>
+</head>
+<body>
+<div class="flex">
+    <div class="bg-blue-500 text-white py-4 px-6 w-64">
+        <h2 class="text-lg font-semibold mb-4">Connected Clients</h2>
+        <ul id="client-list" class="list-none"></ul>
+    </div>
+    <div id="chat-container" class="w-full p-6 hidden">
+        <div id="message-list" class="mb-6">
+            <!-- Message list will be dynamically populated here -->
+        </div>
+        <div id="typing-indicator" class="italic text-gray-500"></div>
+        <form id="message-form" class="flex">
+            <input
+                    type="text"
+                    id="message-input"
+                    class="flex-1 py-2 px-3 border border-gray-300 rounded mr-2"
+                    autocomplete="off"
+                    required
+            />
+            <button
+                    type="submit"
+                    class="bg-blue-500 text-white px-4 py-2 rounded"
+            >
+                Send
+            </button>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.1/socket.io.js"></script>
+<script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const clientList = document.getElementById("client-list");
+        const messageList = document.getElementById("message-list");
+        const messageForm = document.getElementById("message-form");
+        const messageInput = document.getElementById("message-input");
+        const typingIndicator = document.getElementById("typing-indicator");
+        const chatContainer = document.getElementById("chat-container");
+
+        const socket = io.connect("/ws/admin");
+        let typingTimeout = null;
+        let selectedUser = null;
+
+        socket.on("connected_clients", (clients) => {
+          clientList.innerHTML = ""; // Clear existing client list
+          clients.forEach((client) => {
+            const listItem = document.createElement("li");
+            listItem.textContent = client.name;
+            listItem.dataset.userId = client.user_id; // Set user ID as data attribute
+            listItem.classList.add(
+              "text-white",
+              selectedUser == client.user_id ? "bg-yellow-500" : "bg-green-500",
+              "py-1",
+              "px-2",
+              "rounded",
+              "mb-2",
+              "cursor-pointer"
+            );
+            listItem.onclick = () => joinConversation(client.user_id);
+            clientList.appendChild(listItem);
+          });
+        });
+
+        socket.on("admin_message", (data) => {
+          if (selectedUser != data.room) return;
+
+          const listItem = document.createElement("div");
+          const message = document.createElement("span");
+
+          message.textContent = data.message;
+          listItem.appendChild(message);
+
+          if (data.sender === "admin") {
+            // Check if the sender is admin
+            listItem.classList.add("text-right", "mb-2"); // Add appropriate CSS classes
+          } else {
+            listItem.classList.add("text-left", "mb-2");
+          }
+
+          messageList.appendChild(listItem);
+          messageList.scrollTop = messageList.scrollHeight;
+        });
+
+        // Handle last chat history
+        socket.on("last_chat", (lastChat) => {
+          console.log({ lastChat });
+          if (Array.isArray(lastChat)) {
+            lastChat.forEach((data) => {
+              const listItem = document.createElement("div");
+              const message = document.createElement("span");
+
+              message.textContent = data.message;
+              listItem.appendChild(message);
+
+              if (data.sender === "admin") {
+                listItem.classList.add("text-right", "mb-2");
+              } else {
+                listItem.classList.add("text-left", "mb-2");
+              }
+
+              messageList.appendChild(listItem);
+            });
+
+            messageList.scrollTop = messageList.scrollHeight;
+          }
+        });
+
+        function sendMessage(event) {
+          event.preventDefault();
+          const message = messageInput.value.trim();
+          if (message !== "") {
+            const data = {
+              room: selectedUser,
+              message: message,
+            };
+
+            socket.emit("admin_message", data);
+            messageInput.value = "";
+
+            // Append the admin message to the message list
+            const listItem = document.createElement("div");
+            const messageContent = document.createElement("span");
+            messageContent.textContent = message;
+            listItem.appendChild(messageContent);
+            listItem.classList.add("text-right", "mb-2");
+            messageList.appendChild(listItem);
+            messageList.scrollTop = messageList.scrollHeight;
+
+            clearTimeout(typingTimeout);
+            socket.emit("typing_admin", { room: selectedUser, typing: false });
+          }
+        }
+
+        messageForm.addEventListener("submit", sendMessage);
+
+        function joinConversation(userId) {
+          if (selectedUser == userId) return;
+          messageList.innerHTML = ""; // Clear existing message list
+          if (selectedUser) {
+            const prevSelected = document.querySelector(
+              `li[data-user-id="${selectedUser}"]`
+            );
+            if (prevSelected) {
+              prevSelected.classList.remove("bg-yellow-500");
+              prevSelected.classList.add("bg-green-500");
+            }
+          }
+
+          const listItem = document.querySelector(
+            `li[data-user-id="${userId}"]`
+          );
+          if (listItem) {
+            listItem.classList.remove("bg-green-500");
+            listItem.classList.add("bg-yellow-500");
+            selectedUser = userId;
+            socket.emit("join_conversation", { user_id: userId });
+            console.log("join conversation", { userId });
+            chatContainer.classList.remove("hidden");
+          }
+        }
+
+        function sendTypingStatus() {
+          clearTimeout(typingTimeout);
+          typingTimeout = setTimeout(() => {
+            socket.emit("typing_admin", { room: selectedUser, typing: false });
+          }, 3000);
+          socket.emit("typing_admin", { room: selectedUser, typing: true });
+        }
+
+        messageInput.addEventListener("input", sendTypingStatus);
+
+        socket.on("typing_status", (receive) => {
+          if (receive.id == selectedUser && receive.typing) {
+            typingIndicator.textContent = `sedang mengetik...`;
+          } else {
+            typingIndicator.textContent = "";
+          }
+        });
+      });
+
+</script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Identity</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="max-w-md mx-auto mt-20">
+        <h2 class="text-lg font-semibold mb-4">Please Provide Your Identity</h2>
+        <form id="identity-form" class="space-y-4" method="post" action="/save_identity">
+            <div>
+                <label for="name" class="block mb-1">Name</label>
+                <input type="text" id="name" name="name" class="w-full border border-gray-300 rounded py-2 px-3" required>
+            </div>
+            <div>
+                <label for="phone_number" class="block mb-1">Phone Number</label>
+                <input type="text" id="phone_number" name="phone_number" class="w-full border border-gray-300 rounded py-2 px-3" required>
+            </div>
+            <div>
+                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Save</button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
