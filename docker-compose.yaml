@@ -1,6 +1,6 @@
 version: "3.8"
 services:
-  flask-chatbot-socketio:
+  flask-chatbox-socketio:
     build:
       context: .
       dockerfile: Dockerfile
@@ -9,7 +9,7 @@ services:
       - "12121:5000"
     volumes:
       # setup file or folder
-      - /mnt/storage/flask-chatbot-socketio:/app/training_data
+      - /mnt/storage/flask-chatbox-socketio:/app/training_data
     network_mode: bridge
     extra_hosts:
       - "host.docker.internal:host-gateway"
