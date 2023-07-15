@@ -18,11 +18,9 @@ class LogFilter(logging.Filter):
 logging.getLogger("werkzeug").addFilter(LogFilter())
 
 app = Flask(__name__)
-CORS(app, origins='*')
 app.config['SECRET_KEY'] = 'secret_key'
-app.config['SESSION_COOKIE_SECURE'] = False
-app.config['SESSION_COOKIE_HTTPONLY'] = False
 socketio = SocketIO(app)
+CORS(app, origins='*')
 
 
 @app.route('/')
