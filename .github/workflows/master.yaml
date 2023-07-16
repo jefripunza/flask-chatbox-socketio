@@ -16,7 +16,7 @@ env:
 
 jobs:
   app-deploy:
-    name: 🚚 Flask Socket.IO ChatBox - Jefripunza
+    name: 🚚 Flask ChatBox Socket.IO - Jefripunza
     runs-on: server-dell-jefri
     steps:
       - name: Set Time Zone, Get start datetime & Template Top
