@@ -1,15 +1,19 @@
 from flask import Flask, request, make_response, render_template, redirect
+from flask.logging import logging
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from flask_cors import CORS
 
-import os
-import time
-import pickle
-import uuid
-from flask.logging import logging
+import os, time, json, datetime, uuid
+from pymongo import MongoClient
+
 from dotenv import load_dotenv
 
 load_dotenv()
+
+client = MongoClient(os.environ.get('DATABASE_URL'))
+db = client['python_mongodb_example']
+collection = db['users']
+auto_increment = db['auto_increment']
 
 
 class LogFilter(logging.Filter):
