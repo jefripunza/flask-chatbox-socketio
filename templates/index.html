@@ -180,7 +180,10 @@
           event.preventDefault();
           const message = messageInput.value.trim();
           if (message !== "") {
-            socket.emit("message", { message: message, sender: "user" });
+            socket.emit("message", {
+              type: "text",
+              message: message,
+             });
             messageInput.value = "";
             clearTimeout(typingTimeout);
             socket.emit("typing_user", { typing: false });

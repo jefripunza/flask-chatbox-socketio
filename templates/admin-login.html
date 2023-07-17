@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="max-w-md mx-auto mt-20">
+    <h2 class="text-lg font-semibold mb-4">Please Provide Your Admin Credential</h2>
+    <form id="identity-form" class="space-y-4" method="post" action="/admin_login">
+        <div>
+            <label for="username" class="block mb-1">Username</label>
+            <input type="text" id="username" name="username" class="w-full border border-gray-300 rounded py-2 px-3"
+                   required>
+        </div>
+        <div>
+            <label for="password" class="block mb-1">Password</label>
+            <input type="password" id="password" name="password" class="w-full border border-gray-300 rounded py-2 px-3"
+                   required>
+        </div>
+        <div>
+            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Login</button>
+        </div>
+    </form>
+    <!-- displaying flash messages in the template -->
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <ul class="flashes">
+        {% for message in messages %}
+        {% set flash_message = message | replace("'", '"') | trim %}
+        {% set view = flash_message | fromjson %}
+        <li class="{{ view.color }}">{{ view.message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    {% endwith %}
+
+    <div style="margin-top:10px">
+        <a href="/admin">Or Register...</a>
+    </div>
+</div>
+</body>
+</html>
